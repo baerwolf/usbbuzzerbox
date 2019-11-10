@@ -1,0 +1,15 @@
+[submodule "libraries/v-usb"]
+	path = libraries/v-usb
+	url = https://github.com/tinyusbboard/v-usb
+[submodule "libraries/avrlibs-baerwolf"]
+	path = libraries/avrlibs-baerwolf
+	url = https://github.com/baerwolf/avrlibs-baerwolf
+[submodule "libraries/hid-KeyboardMouse"]
+	path = libraries/hid-KeyboardMouse
+	url = https://github.com/tinyusbboard/hid-KeyboardMouse
+[submodule "libraries/USBaspLoader"]
+	path = libraries/USBaspLoader
+	url = https://github.com/tinyusbboard/USBaspLoader
+[submodule "libraries/API"]
+	path = libraries/API
+	url = https://github.com/tinyusbboard/API
