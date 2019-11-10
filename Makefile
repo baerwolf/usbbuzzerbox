@@ -13,6 +13,7 @@ LFUSE  = 0xe1
 F_CPU = 16000000
 
 # extra data section
+  DEFINES += -DBOOT_SECTION_START=0x1800 -D__bootloaderconfig_h_included__
 # DEFINES += -D__AVR_LIBC_DEPRECATED_ENABLE__
 # DEFINES += -DDATASECTION=__attribute__\ \(\(section\ \(\".extradata\"\)\)\)
 # LDFLAGS += -Wl,--section-start=.extradata=0x6000
@@ -47,7 +48,7 @@ AVRDUDE_FUSE += -U efuse:w:$(EFUSE):m
 endif
 
 
-MYCFLAGS = -Wall -g3 -ggdb -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -ffunction-sections -fdata-sections -I. -Isource -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) $(CFLAGS)   $(DEFINES)
+MYCFLAGS = -Wall -g3 -ggdb -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -ffunction-sections -fdata-sections -I. -Isource -Ilibraries/API -Ilibraries/USBaspLoader/firmware -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) $(CFLAGS)   $(DEFINES)
 MYLDFLAGS = -Wl,--relax,--gc-sections $(LDFLAGS)
 
 
@@ -86,6 +87,13 @@ EXTRADEP = Makefile
 all: release/main.hex release/eeprom.hex release/main.bin release/eeprom.bin release/main.asm build/main.asm
 
 
+build/apipage.S: libraries/API/apipage.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/API/apipage.c -S -o build/apipage.S $(MYCFLAGS)
+
+build/apipage.o: build/apipage.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/apipage.S -c -o build/apipage.o $(MYCFLAGS)
+
+
 build/main.S: source/main.c $(STDDEP) $(EXTRADEP)
 	$(CC) source/main.c -S -o build/main.S $(MYCFLAGS)
 
@@ -96,7 +104,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o
+MYOBJECTS = build/main.o build/apipage.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."
