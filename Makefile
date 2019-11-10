@@ -10,7 +10,7 @@ HFUSE  = 0xd9
 LFUSE  = 0xe1
 
 # the frequency the microcontroller is clocked with
-F_CPU = 1000000
+F_CPU = 16000000
 
 # extra data section
 # DEFINES += -D__AVR_LIBC_DEPRECATED_ENABLE__
@@ -86,9 +86,11 @@ EXTRADEP = Makefile
 all: release/main.hex release/eeprom.hex release/main.bin release/eeprom.bin release/main.asm build/main.asm
 
 
+build/main.S: source/main.c $(STDDEP) $(EXTRADEP)
+	$(CC) source/main.c -S -o build/main.S $(MYCFLAGS)
 
-build/main.o: source/main.c $(STDDEP) $(EXTRADEP)
-	$(CC) source/main.c -c -o build/main.o $(MYCFLAGS)
+build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/main.S -c -o build/main.o $(MYCFLAGS)
 
 
 
