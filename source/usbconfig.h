@@ -309,10 +309,10 @@ section at the end of this file).
 /* Version number of the device: Minor number first, then major number.
  */
 #ifndef USB_CFG_VENDOR_NAME
-#	define USB_CFG_VENDOR_NAME     'h', 't', 't', 'p', ':', '/', '/', 'm', 'a', 't', 'r', 'i', 'x', 's', 't', 'o', 'r', 'm', '.','c','o', 'm', '/', 'a','v','r', '/', 't', 'i','n', 'y', 'u', 's', 'b', 'b', 'o', 'a', 'r', 'd', '/'
+#	define USB_CFG_VENDOR_NAME     'S', 't', 'e', 'p', 'h', 'a', 'n', ' ', 'B', 'a', 'e', 'r', 'w', 'o', 'l', 'f', ' ', '(', 'm','a','t', 'r', 'i', 'x','s','t', 'o', 'r', 'm','.', 'c', 'o', 'm', ')'
 #endif
 #ifndef USB_CFG_VENDOR_NAME_LEN
-#	define USB_CFG_VENDOR_NAME_LEN 40
+#	define USB_CFG_VENDOR_NAME_LEN 34
 #endif
 /* These two values define the vendor name returned by the USB device. The name
  * must be given as a list of characters under single quotes. The characters
@@ -323,20 +323,20 @@ section at the end of this file).
  * details.
  */
 #ifndef USB_CFG_DEVICE_NAME
-#	define USB_CFG_DEVICE_NAME     't', 'i', 'n', 'y', 'U', 'S', 'B', 'b', 'o', 'a', 'r', 'd'
+#	define USB_CFG_DEVICE_NAME     'B', 'u', 'z', 'z', 'e', 'r', 'B', 'o', 'x'
 #endif
 #ifndef USB_CFG_DEVICE_NAME_LEN
-#	define USB_CFG_DEVICE_NAME_LEN 12
+#	define USB_CFG_DEVICE_NAME_LEN 9
 #endif
 /* Same as above for the device name. If you don't want a device name, undefine
  * the macros. See the file USB-IDs-for-free.txt before you assign a name if
  * you use a shared VID/PID.
  */
 #ifndef USB_CFG_SERIAL_NUMBER
-#	define USB_CFG_SERIAL_NUMBER 'v', '0', '.', '2', '-', '2', '0', '1', '5', '0', '7', '2', '7', '2', '3', '0', '0', 'Z'
+#	define USB_CFG_SERIAL_NUMBER 'h', 'i', 'd', 'L', 'i', 'b', '-', 'v', '0', '.', '2', '-', '2', '0', '1', '5', '0', '7', '2', '7', '2', '3', '0', '0', 'Z'
 #endif
 #ifndef USB_CFG_SERIAL_NUMBER_LEN
-#	define USB_CFG_SERIAL_NUMBER_LEN  18
+#	define USB_CFG_SERIAL_NUMBER_LEN  25
 #endif
 /* Same as above for the serial number. If you don't want a serial number,
  * undefine the macros.
