@@ -7,6 +7,9 @@
 #include "libraries/API/apipage.h"
 #include "libraries/avrlibs-baerwolf/include/extfunc.h"
 #include "libraries/avrlibs-baerwolf/include/hwclock.h"
+#include "libraries/avrlibs-baerwolf/include/cpucontext.h"
+
+#include "libraries/hid-KeyboardMouse/gcc-code/lib/hidcore.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -52,39 +55,67 @@ void init_cpu(void) {
   wdt_disable();
 
 }
-#define SLEEPDELAY 500000
+
+
+
+void EVENT_CHANGE_LED_state (void) {
+  // NUM LOCK
+  if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_NUM_LOCK))	SET_HIGH(LED_RED);
+  else								SET_LOW(LED_RED);
+}
+
+
+
+#define SLEEPDELAY	(50000)
+#define HIDINTERVAL	(4000) /*4ms*/
 int main(void) {
   init_cpu();
   extfunc_initialize();
   EXTFUNC_callByName(hwclock_initialize);
 
-  // YOUR CODE HERE:
+  hidInit();
+  usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
+
   SET_HIGH(EXTRAPULLUP); CFG_OUTPUT(EXTRAPULLUP);
   CFG_PULLUP(BUTTON_PROG);
   CFG_OUTPUT(LED_RED);
-  
-  while (IS_PRESSED(BUTTON_PROG)) {
-    _delay_ms(33);
-  }
-  
-  {
-    hwclock_time_t last, now;
-    
-    last=EXTFUNC_callByName(hwclock_now);
-    while (1) {
-      while (!(IS_PRESSED(BUTTON_PROG))) {
-	uint32_t i;
-	now=EXTFUNC_callByName(hwclock_now);
-	i=EXTFUNC_callByName(hwclock_tickspassed, last, now);
-	if (i > HWCLOCK_UStoTICK(SLEEPDELAY)) {
-	  TOGGLE(LED_RED);
-	  last=EXTFUNC_callByName(hwclock_modify, last, -HWCLOCK_UStoTICK(SLEEPDELAY));
-	}
-      }
+  _delay_ms(300);
 
-      bootloader_startup();
+
+  /* connect the usb */
+  usbDeviceConnect();
+  usbInit();
+  sei();
+
+
+  {
+    uint8_t		i;
+    uint32_t		tdiff;
+    hwclock_time_t	last, now;
+
+    last=EXTFUNC_callByName(hwclock_now);
+    while (!IS_PRESSED(BUTTON_PROG)) {
+      i=0;
+      now=EXTFUNC_callByName(hwclock_now);
+      tdiff=EXTFUNC_callByName(hwclock_tickspassed, last, now);
+      if (tdiff >= HIDINTERVAL) {
+	tdiff/=HIDINTERVAL;
+	i=tdiff;
+	_MemoryBarrier();
+	hidPoll(&i);
+#if (1)
+	last=now;
+#else
+	_MemoryBarrier();
+	tdiff=i;
+	tdiff*=HIDINTERVAL;
+	last=EXTFUNC_callByName(hwclock_modify, last, tdiff);
+#endif
+      }
     }
   }
+
+  bootloader_startup();
 
   EXTFUNC_callByName(hwclock_finalize);
   extfunc_finalize();

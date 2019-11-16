@@ -14,6 +14,8 @@ F_CPU = 16000000
 
 # extra data section
   DEFINES += -DBOOT_SECTION_START=0x1800 -D__bootloaderconfig_h_included__
+  DEFINES += -DVUSB_CFG_IOPORTNAME=D -DVUSB_CFG_DMINUS_BIT=7 -DVUSB_CFG_DPLUS_BIT=2
+  DEFINES += -DVUSB_CFG_HASNO_PULLUP_IOPORTNAME -DVUSB_CFG_HASNO_PULLUP_BIT
 # DEFINES += -D__AVR_LIBC_DEPRECATED_ENABLE__
 # DEFINES += -DDATASECTION=__attribute__\ \(\(section\ \(\".extradata\"\)\)\)
 # LDFLAGS += -Wl,--section-start=.extradata=0x6000
@@ -48,7 +50,7 @@ AVRDUDE_FUSE += -U efuse:w:$(EFUSE):m
 endif
 
 
-MYCFLAGS = -Wall -g3 -ggdb -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -ffunction-sections -fdata-sections -I. -Isource -Ilibraries/API -Ilibraries/USBaspLoader/firmware -Ilibraries/avrlibs-baerwolf/include -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) $(CFLAGS)   $(DEFINES)
+MYCFLAGS = -Wall -g3 -ggdb -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -ffunction-sections -fdata-sections -I. -Isource -Ilibraries/API -Ilibraries/USBaspLoader/firmware -Ilibraries/avrlibs-baerwolf/include -Ilibraries/v-usb/usbdrv -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) $(CFLAGS)   $(DEFINES)
 MYLDFLAGS = -Wl,--relax,--gc-sections $(LDFLAGS)
 
 
@@ -87,6 +89,30 @@ EXTRADEP = Makefile
 all: release/main.hex release/eeprom.hex release/main.bin release/eeprom.bin release/main.asm build/main.asm
 
 
+build/usbdrvasm.o: libraries/v-usb/usbdrv/usbdrvasm.S $(STDDEP) $(EXTRADEP)
+	$(CC) -x assembler-with-cpp -c libraries/v-usb/usbdrv/usbdrvasm.S -o build/usbdrvasm.o $(MYCFLAGS)
+
+build/oddebug.o: libraries/v-usb/usbdrv/oddebug.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/v-usb/usbdrv/oddebug.c -c -o build/oddebug.o $(MYCFLAGS)
+
+build/usbdrv.o: libraries/v-usb/usbdrv/usbdrv.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/v-usb/usbdrv/usbdrv.c -c -o build/usbdrv.o $(MYCFLAGS)
+
+
+build/hidcore.S: libraries/hid-KeyboardMouse/gcc-code/lib/hidcore.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/hid-KeyboardMouse/gcc-code/lib/hidcore.c -S -o build/hidcore.S $(MYCFLAGS)
+
+build/hidcore.o: build/hidcore.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/hidcore.S -c -o build/hidcore.o $(MYCFLAGS)
+
+build/asciimap.S: libraries/hid-KeyboardMouse/gcc-code/lib/asciimap.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/hid-KeyboardMouse/gcc-code/lib/asciimap.c -S -o build/asciimap.S $(MYCFLAGS)
+
+build/asciimap.o: build/asciimap.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/asciimap.S -c -o build/asciimap.o $(MYCFLAGS)
+
+
+
 build/apipage.S: libraries/API/apipage.c $(STDDEP) $(EXTRADEP)
 	$(CC) libraries/API/apipage.c -S -o build/apipage.S $(MYCFLAGS)
 
@@ -117,7 +143,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o build/apipage.o build/extfunc.o build/hwclock.o
+MYOBJECTS = build/main.o build/apipage.o build/extfunc.o build/hwclock.o  build/usbdrv.o build/oddebug.o build/usbdrvasm.o build/hidcore.o build/asciimap.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."
