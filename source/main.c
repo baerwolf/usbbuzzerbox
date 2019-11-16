@@ -25,6 +25,9 @@
 
 #include <util/delay.h>
 
+#ifdef USB_CFG_HID_NOKEYBOARD
+#	error BuzzerButton needs HID-keyboard configured
+#endif
 
 // hardware depended - only atmega8(A) at the moment //
 #if (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__))
