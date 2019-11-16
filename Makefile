@@ -48,7 +48,7 @@ AVRDUDE_FUSE += -U efuse:w:$(EFUSE):m
 endif
 
 
-MYCFLAGS = -Wall -g3 -ggdb -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -ffunction-sections -fdata-sections -I. -Isource -Ilibraries/API -Ilibraries/USBaspLoader/firmware -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) $(CFLAGS)   $(DEFINES)
+MYCFLAGS = -Wall -g3 -ggdb -Os -fno-move-loop-invariants -fno-tree-scev-cprop -fno-inline-small-functions -ffunction-sections -fdata-sections -I. -Isource -Ilibraries/API -Ilibraries/USBaspLoader/firmware -Ilibraries/avrlibs-baerwolf/include -mmcu=$(DEVICE) -DF_CPU=$(F_CPU) $(CFLAGS)   $(DEFINES)
 MYLDFLAGS = -Wl,--relax,--gc-sections $(LDFLAGS)
 
 
@@ -94,6 +94,19 @@ build/apipage.o: build/apipage.S $(STDDEP) $(EXTRADEP)
 	$(CC) build/apipage.S -c -o build/apipage.o $(MYCFLAGS)
 
 
+build/extfunc.S: libraries/avrlibs-baerwolf/source/extfunc.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/avrlibs-baerwolf/source/extfunc.c -S -o build/extfunc.S $(MYCFLAGS)
+
+build/extfunc.o: build/extfunc.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/extfunc.S -c -o build/extfunc.o $(MYCFLAGS)
+
+build/hwclock.S: libraries/avrlibs-baerwolf/source/hwclock.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/avrlibs-baerwolf/source/hwclock.c -S -o build/hwclock.S $(MYCFLAGS)
+
+build/hwclock.o: build/hwclock.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/hwclock.S -c -o build/hwclock.o $(MYCFLAGS)
+
+
 build/main.S: source/main.c $(STDDEP) $(EXTRADEP)
 	$(CC) source/main.c -S -o build/main.S $(MYCFLAGS)
 
@@ -104,7 +117,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o build/apipage.o
+MYOBJECTS = build/main.o build/apipage.o build/extfunc.o build/hwclock.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."

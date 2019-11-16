@@ -20,6 +20,12 @@
 #	define LED_RED		B,3
 #endif
 
+#ifndef PWM_CLOCK1
+#	define PWM_CLOCK1	B,2
+#endif
+#ifndef PWM_CLOCK0
+#	define PWM_CLOCK0	D,4
+#endif
 
 
 #endif
