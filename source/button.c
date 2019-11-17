@@ -39,19 +39,40 @@ static void __button_sendkey(uint8_t key) {
   _button_waitclearreport();
 }
 
+#if 0 /* 1=Windows, 0=Linux */
+ static void _button_sendLock(void) {
+   /* Windows: GUIKey + L */
+   _button_waitclearreport();
+   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
+
+   _button_waitclearreport();
+   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
+   current_keyboard_report.keycode[0]=HIDKEYBOARD_KEYUSE_l;
+
+   _button_waitclearreport();
+   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
+
+   _button_waitclearreport();
+ }
+#else
 static void _button_sendLock(void) {
+  /* Linux: Ctrl + Alt + Delete */
   _button_waitclearreport();
-  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
+  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
+  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
 
   _button_waitclearreport();
-  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
-  current_keyboard_report.keycode[0]=HIDKEYBOARD_KEYUSE_l;
+  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
+  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
+  current_keyboard_report.keycode[0]=0x4c; /* other Version of "delete"-key (page 55) */
 
   _button_waitclearreport();
-  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
+  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
+  current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
   
   _button_waitclearreport();
 }
+#endif
 
 #define BUTTON_DEBOUNCE_PRESSED_US	HWCLOCK_UStoTICK(20000)
 EXTFUNC(int8_t, button_main, void* parameters)  {
