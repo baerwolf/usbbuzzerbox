@@ -19,6 +19,13 @@ F_CPU = 16000000
   DEFINES += -DBOOT_SECTION_START=0x1800 -D__bootloaderconfig_h_included__
   DEFINES += -DVUSB_CFG_IOPORTNAME=D -DVUSB_CFG_DMINUS_BIT=7 -DVUSB_CFG_DPLUS_BIT=2
   DEFINES += -DVUSB_CFG_HASNO_PULLUP_IOPORTNAME -DVUSB_CFG_HASNO_PULLUP_BIT
+
+# DEFINES += -DEXTFUNC_NOEXT=0
+# DEFINES += -DCPUCONTEXT_EXTRASYMBOLS=1
+# DEFINES += -DEXTFUNCFAR=__attribute__\ \(\(section\ \(\".farfunc\"\)\)\) -Wl,--section-start=.farfunc=0x1300
+# DEFINES += -DEXTFUNCNEAR=PROGMEM
+# DEFINES += -DEXTFUNCNEAR=__attribute__\ \(\(section\ \(\".nearfunc\"\)\)\) -Wl,--section-start=.nearfunc=0x1000
+
 # DEFINES += -D__AVR_LIBC_DEPRECATED_ENABLE__
 # DEFINES += -DDATASECTION=__attribute__\ \(\(section\ \(\".extradata\"\)\)\)
 # LDFLAGS += -Wl,--section-start=.extradata=0x6000
