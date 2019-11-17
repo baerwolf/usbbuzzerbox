@@ -167,6 +167,7 @@ int main(void) {
   }
 
   cli();
+  usbDeviceDisconnect();
   EXTFUNC_callByName(button_finalize);
   EXTFUNC_callByName(hwclock_finalize);
   EXTFUNC_callByName(cpucontext_finalize);
