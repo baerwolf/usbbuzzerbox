@@ -118,7 +118,7 @@ int main(void) {
   {
     uint8_t		i;
     uint32_t		tdiff;
-    uint16_t		btnloops=0, msloops=0, btnlooplimit=0x7fff;
+    uint8_t		btnloops=0;
     hwclock_time_t	last, now;
 
     last=EXTFUNC_callByName(hwclock_now);
@@ -128,8 +128,6 @@ int main(void) {
     while (1) {
 #endif
       i=0;
-      btnloops++;
-      msloops++;
       now=EXTFUNC_callByName(hwclock_now);
       tdiff=EXTFUNC_callByName(hwclock_tickspassed, last, now);
       if (tdiff >= HIDINTERVAL) {
@@ -141,8 +139,13 @@ int main(void) {
 	_MemoryBarrier();
 	hidPoll(&i);
 
-	btnlooplimit=msloops>>2;
-	msloops=0;
+	btnloops++;
+	// about every 16ms
+	if (btnloops >= 4) {
+	  switchto_buttocontext(); /* cooperative multitasking to button thread - which will switch back to here on its own decision */
+	  btnloops=0;
+	}
+
 #if (1)
 	last=now;
 #else
@@ -155,12 +158,6 @@ int main(void) {
 	/* we need to poll the USB more often then every 4ms */
 	i=0;
 	hidPoll(&i);
-      }
-
-      // about every ms
-      if (btnloops >= btnlooplimit) {
-	switchto_buttocontext(); /* cooperative multitasking to button thread - which will switch back to here on its own decision */
-	btnloops=0;
       }
 
     }
