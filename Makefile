@@ -13,7 +13,9 @@ LFUSE  = 0xe1
 F_CPU = 16000000
 
 # extra data section
-  DEFINES += -DUSB_CFG_HID_NOMOUSE
+# DEFINES += -DMAINENDCYCLES=22500
+# DEFINES += -DUSB_CFG_HID_NOMOUSE
+  DEFINES += -DASCIIMAP_LAYOUT=ASCIIMAP_LAYOUT_DE
   DEFINES += -DBOOT_SECTION_START=0x1800 -D__bootloaderconfig_h_included__
   DEFINES += -DVUSB_CFG_IOPORTNAME=D -DVUSB_CFG_DMINUS_BIT=7 -DVUSB_CFG_DPLUS_BIT=2
   DEFINES += -DVUSB_CFG_HASNO_PULLUP_IOPORTNAME -DVUSB_CFG_HASNO_PULLUP_BIT
@@ -127,6 +129,12 @@ build/extfunc.S: libraries/avrlibs-baerwolf/source/extfunc.c $(STDDEP) $(EXTRADE
 build/extfunc.o: build/extfunc.S $(STDDEP) $(EXTRADEP)
 	$(CC) build/extfunc.S -c -o build/extfunc.o $(MYCFLAGS)
 
+build/cpucontext.S: libraries/avrlibs-baerwolf/source/cpucontext.c $(STDDEP) $(EXTRADEP)
+	$(CC) libraries/avrlibs-baerwolf/source/cpucontext.c -S -o build/cpucontext.S $(MYCFLAGS)
+
+build/cpucontext.o: build/cpucontext.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/cpucontext.S -c -o build/cpucontext.o $(MYCFLAGS)
+
 build/hwclock.S: libraries/avrlibs-baerwolf/source/hwclock.c $(STDDEP) $(EXTRADEP)
 	$(CC) libraries/avrlibs-baerwolf/source/hwclock.c -S -o build/hwclock.S $(MYCFLAGS)
 
@@ -150,7 +158,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o build/button.o build/apipage.o build/extfunc.o build/hwclock.o  build/usbdrv.o build/oddebug.o build/usbdrvasm.o build/hidcore.o build/asciimap.o
+MYOBJECTS = build/main.o build/button.o build/apipage.o build/extfunc.o build/cpucontext.o build/hwclock.o  build/usbdrv.o build/oddebug.o build/usbdrvasm.o build/hidcore.o build/asciimap.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."

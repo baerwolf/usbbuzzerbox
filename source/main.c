@@ -4,6 +4,7 @@
 #define __MAIN_C_dc83edef7fb74d0f88488010fe346ac7	1
 
 #include "main.h"
+#include "button.h"
 #include "libraries/API/apipage.h"
 #include "libraries/avrlibs-baerwolf/include/extfunc.h"
 #include "libraries/avrlibs-baerwolf/include/hwclock.h"
@@ -51,6 +52,7 @@ void __hwclock_timer_start(void) {
 #endif
 ///////////////////////////////////////////////////////
 
+
 void init_cpu(void) {
   cli();
   bootupreason=MCUBOOTREASONREG;
@@ -58,8 +60,6 @@ void init_cpu(void) {
   wdt_disable();
 
 }
-
-
 
 void EVENT_CHANGE_LED_state (void) {
   // CAPS LOCK
@@ -69,11 +69,32 @@ void EVENT_CHANGE_LED_state (void) {
 
 
 
-#define SLEEPDELAY	(50000)
-#define HIDINTERVAL	(4000) /*4ms*/
+// thread-stuff for button handling ///////////////////
+static 	uint8_t		buttoncontext_stack[160];
+static	cpucontext_t	buttoncontext;
+
+static void prepare_buttoncontext(void) {
+  EXTFUNC_functype(CPUCONTEXT_entry_t) buttonmainfunc = EXTFUNC_NULL;
+
+  buttonmainfunc = EXTFUNC_getPtr(button_main, CPUCONTEXT_entry_t);
+  EXTFUNC_callByName(cpucontext_create, &buttoncontext, buttoncontext_stack, sizeof(buttoncontext_stack), buttonmainfunc, NULL);
+}
+
+static void switchto_buttocontext(void) {
+  EXTFUNC_callByName(cpucontext_switch, &buttoncontext);
+}
+///////////////////////////////////////////////////////
+
+
+#define HIDINTERVAL	HWCLOCK_UStoTICK(4000) /*4ms*/
+
+#ifdef MAINENDCYCLES
+static uint32_t intcounter = 0;
+#endif
 int main(void) {
   init_cpu();
   extfunc_initialize();
+  EXTFUNC_callByName(cpucontext_initialize);
   EXTFUNC_callByName(hwclock_initialize);
 
   hidInit();
@@ -83,6 +104,9 @@ int main(void) {
   CFG_PULLUP(BUTTON_PROG);
   CFG_OUTPUT(LED_RED);
   _delay_ms(300);
+  
+  EXTFUNC_callByName(button_initialize);
+  prepare_buttoncontext();
 
 
   /* connect the usb */
@@ -97,12 +121,19 @@ int main(void) {
     hwclock_time_t	last, now;
 
     last=EXTFUNC_callByName(hwclock_now);
-    while (!IS_PRESSED(BUTTON_PROG)) {
+#ifdef MAINENDCYCLES
+    while (intcounter < MAINENDCYCLES) {
+#else
+    while (1) {
+#endif
       i=0;
       now=EXTFUNC_callByName(hwclock_now);
       tdiff=EXTFUNC_callByName(hwclock_tickspassed, last, now);
       if (tdiff >= HIDINTERVAL) {
 	tdiff/=HIDINTERVAL;
+#ifdef MAINENDCYCLES
+	intcounter+=tdiff;
+#endif
 	i=tdiff;
 	_MemoryBarrier();
 	hidPoll(&i);
@@ -114,13 +145,21 @@ int main(void) {
 	tdiff*=HIDINTERVAL;
 	last=EXTFUNC_callByName(hwclock_modify, last, tdiff);
 #endif
+      } else {
+	/* we need to poll the USB more often then every 4ms */
+	i=0;
+	hidPoll(&i);
       }
+      switchto_buttocontext(); /* cooperative multitasking to button thread - which will switch back to here on its own decision */
     }
   }
 
-  bootloader_startup();
-
+  cli();
+  EXTFUNC_callByName(button_finalize);
   EXTFUNC_callByName(hwclock_finalize);
+  EXTFUNC_callByName(cpucontext_finalize);
   extfunc_finalize();
+
+  bootloader_startup();
   return 0;
 }
