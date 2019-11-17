@@ -56,7 +56,7 @@ static void _button_sendLock(void) {
 #define BUTTON_DEBOUNCE_PRESSED_US	HWCLOCK_UStoTICK(20000)
 EXTFUNC(int8_t, button_main, void* parameters)  {
   hwclock_time_t pressed, now;
-  uint32_t ticks = 0;
+  uint32_t ticks;
 
   while (1) {
     
@@ -66,6 +66,7 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
     }
 
     /* pressed */
+    ticks=0;
     pressed=EXTFUNC_callByName(hwclock_now);
     while (IS_PRESSED(BUTTON_PROG)) {
       __button_yield();
