@@ -134,6 +134,12 @@ build/hwclock.o: build/hwclock.S $(STDDEP) $(EXTRADEP)
 	$(CC) build/hwclock.S -c -o build/hwclock.o $(MYCFLAGS)
 
 
+build/button.S: source/button.c $(STDDEP) $(EXTRADEP)
+	$(CC) source/button.c -S -o build/button.S $(MYCFLAGS)
+
+build/button.o: build/button.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/button.S -c -o build/button.o $(MYCFLAGS)
+
 build/main.S: source/main.c $(STDDEP) $(EXTRADEP)
 	$(CC) source/main.c -S -o build/main.S $(MYCFLAGS)
 
@@ -144,7 +150,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o build/apipage.o build/extfunc.o build/hwclock.o  build/usbdrv.o build/oddebug.o build/usbdrvasm.o build/hidcore.o build/asciimap.o
+MYOBJECTS = build/main.o build/button.o build/apipage.o build/extfunc.o build/hwclock.o  build/usbdrv.o build/oddebug.o build/usbdrvasm.o build/hidcore.o build/asciimap.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."
