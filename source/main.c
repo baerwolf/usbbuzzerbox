@@ -62,8 +62,8 @@ void init_cpu(void) {
 
 
 void EVENT_CHANGE_LED_state (void) {
-  // NUM LOCK
-  if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_NUM_LOCK))	SET_HIGH(LED_RED);
+  // CAPS LOCK
+  if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_CAPS_LOCK))	SET_HIGH(LED_RED);
   else								SET_LOW(LED_RED);
 }
 
