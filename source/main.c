@@ -30,8 +30,9 @@
 #	error BuzzerButton needs HID-keyboard configured
 #endif
 
-// hardware depended - only atmega8(A) at the moment //
-#if (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__))
+// hardware depended - only atmega8(A) and atmega88 at the moment //
+#if (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || \
+     defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__))
 void __hwclock_timer_init(void) {
   CFG_INPUT(PWM_CLOCK0);
   CFG_OUTPUT(PWM_CLOCK1);
@@ -45,7 +46,11 @@ void __hwclock_timer_start(void) {
   TCCR1A=0b00110011;
   TCCR1B=0b00011001;
 //TIMER0
+#if (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__))
   TCCR0 =0b00000110; /* clock on falling edge of T0 */
+#else
+  TCCR0B=0b00000110; /* clock on falling edge of T0 */
+#endif
 }
 #else
 #	error unsupported AVR
