@@ -30,9 +30,11 @@
 #	error BuzzerButton needs HID-keyboard configured
 #endif
 
-// hardware depended - only atmega8(A) and atmega88 at the moment //
+// hardware depended - only avrs for tinyusbboard at the moment //
 #if (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__) || \
-     defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__))
+     defined (__AVR_ATmega88__) || defined (__AVR_ATmega88P__) || defined (__AVR_ATmega88A__) || defined (__AVR_ATmega88PA__) || \
+     defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__) || \
+     defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328A__) || defined (__AVR_ATmega328PA__))
 void __hwclock_timer_init(void) {
   CFG_INPUT(PWM_CLOCK0);
   CFG_OUTPUT(PWM_CLOCK1);
