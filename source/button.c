@@ -10,6 +10,20 @@
 #include "libraries/hid-KeyboardMouse/gcc-code/lib/hidcore.h"
 #include "libraries/hid-KeyboardMouse/gcc-code/lib/asciimap.h"
 
+#include <stdint.h>
+
+/* put the message intentionally into SRAM to avoid long delay due to loading */
+#ifdef HIDMESSAGE
+static uint8_t hidmessage[] = HIDMESSAGE "\n";
+#else
+static uint8_t hidmessage[] = "";
+#endif
+
+#ifndef HIDMESSAGETIME
+/* 10 seconds default timeout */
+#   define HIDMESSAGETIME 100
+#endif
+
 EXTFUNC_void(int8_t, button_initialize) {
 #ifdef LED_DEBUG
   CFG_OUTPUT(LED_DEBUG);
@@ -102,6 +116,7 @@ static void _button_sendLock(void) {
 EXTFUNC(int8_t, button_main, void* parameters)  {
   hwclock_time_t pressed, now;
   uint32_t ticks;
+  uint8_t tickcnt;
 
   while (1) {
     
@@ -126,10 +141,25 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
       //__button_sendkey('\n');
       _button_sendLock();
       /* job done - wait until unpressed */
+      tickcnt=0;
+      pressed=EXTFUNC_callByName(hwclock_now);
       while (IS_PRESSED(BUTTON_PROG)) {
 	    __button_yield();
+        now=EXTFUNC_callByName(hwclock_now);
+        ticks=EXTFUNC_callByName(hwclock_tickspassed, pressed, now);
+        if (ticks >= HWCLOCK_UStoTICK(100000)) {
+            if (tickcnt < 0xff) tickcnt++;
+            pressed=EXTFUNC_callByName(hwclock_modify, pressed, HWCLOCK_UStoTICK(100000));
+        }
       }
       _button_waitclearreport();
+
+      /* button was pressed more than 10seconds? */
+      if (tickcnt > HIDMESSAGETIME) {
+          for (tickcnt=0;tickcnt<sizeof(hidmessage);tickcnt++) {
+              __button_sendkey(hidmessage[tickcnt]);
+          }
+      }
     }
 
   }
