@@ -11,6 +11,9 @@
 #include "libraries/hid-KeyboardMouse/gcc-code/lib/asciimap.h"
 
 EXTFUNC_void(int8_t, button_initialize) {
+#ifdef LED_DEBUG
+  CFG_OUTPUT(LED_DEBUG);
+#endif
   return 0;
 }
 
@@ -18,9 +21,19 @@ EXTFUNC_void(int8_t, button_finalize) {
   return 0;
 }
 
-
-
+#ifdef LED_DEBUG
+static hwclock_time_t blinklast, blinknow;
+#endif
 static void __button_yield(void) {
+#ifdef LED_DEBUG
+    uint32_t diff=0;
+    blinknow=EXTFUNC_callByName(hwclock_now);
+    diff = EXTFUNC_callByName(hwclock_tickspassed, blinklast, blinknow);
+    if (diff > HWCLOCK_UStoTICK(100000)) {
+        TOGGLE(LED_DEBUG);
+        blinklast=EXTFUNC_callByName(hwclock_modify, blinklast, HWCLOCK_UStoTICK(100000)); /* last=now would accumulate jitter! */
+    }
+#endif
     EXTFUNC_callByName(cpucontext_switch, cpucontext_main_context);
 }
 
