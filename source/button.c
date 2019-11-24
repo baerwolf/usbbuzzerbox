@@ -37,7 +37,22 @@ static void __button_yield(void) {
     EXTFUNC_callByName(cpucontext_switch, cpucontext_main_context);
 }
 
+static void _button_dowaitticks(uint32_t waitticks) {
+    hwclock_time_t last, now;
+    uint32_t diff;
+
+    last=EXTFUNC_callByName(hwclock_now);
+    do {
+        __button_yield();
+        now=EXTFUNC_callByName(hwclock_now);
+        diff = EXTFUNC_callByName(hwclock_tickspassed, last, now);
+        __button_yield();
+    } while (diff >= waitticks);
+}
+
 static void _button_waitclearreport(void) {
+  /* wait some natural time */
+  _button_dowaitticks(HWCLOCK_UStoTICK(100000));
   /* clear all reported keys */
   while (keyboard_report_dirty) { __button_yield(); }
   keyboard_report_clear(&current_keyboard_report);
@@ -64,8 +79,6 @@ static void __button_sendkey(uint8_t key) {
 
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
-
-   _button_waitclearreport();
  }
 #else
 static void _button_sendLock(void) {
@@ -82,8 +95,6 @@ static void _button_sendLock(void) {
   _button_waitclearreport();
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
-  
-  _button_waitclearreport();
 }
 #endif
 
@@ -116,8 +127,9 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
       _button_sendLock();
       /* job done - wait until unpressed */
       while (IS_PRESSED(BUTTON_PROG)) {
-	__button_yield();
+	    __button_yield();
       }
+      _button_waitclearreport();
     }
 
   }
