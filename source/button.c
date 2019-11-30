@@ -77,9 +77,16 @@ static void _button_dowaitticks(uint32_t waitticks) {
     } while (diff >= waitticks);
 }
 
+static void _button_delay_100ms(const uint8_t hundretms) {
+    uint8_t i;
+    for (i=0;i<hundretms;i++) {
+        _button_dowaitticks(HWCLOCK_UStoTICK(100000));
+    }
+}
+
 static void _button_waitclearreport(void) {
   /* wait some natural time */
-  _button_dowaitticks(HWCLOCK_UStoTICK(100000));
+  _button_delay_100ms(2);
   /* clear all reported keys */
   while (keyboard_report_dirty) { __button_yield(); }
   keyboard_report_clear(&current_keyboard_report);
@@ -94,16 +101,25 @@ static void __button_sendkey(uint8_t key) {
   _button_waitclearreport();
 }
 
-#if 0 /* 1=Windows, 0=Linux */
+static void __button_sendbackspace(void) {
+    _button_waitclearreport();
+    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_SHIFT);
+    current_keyboard_report.keycode[0]=HIDKEYBOARD_KEYUSE_delete;
+    _button_waitclearreport();
+}
+
+#if 1 /* 1=Windows, 0=Linux */
  static void _button_sendLock(void) {
    /* Windows: GUIKey + L */
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
 
+   _button_delay_100ms(3);
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
    current_keyboard_report.keycode[0]=HIDKEYBOARD_KEYUSE_l;
 
+   _button_delay_100ms(5);
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
  }
@@ -114,11 +130,13 @@ static void _button_sendLock(void) {
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
 
+  _button_delay_100ms(3);
   _button_waitclearreport();
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
   current_keyboard_report.keycode[0]=0x4c; /* other Version of "delete"-key (page 55) */
 
+  _button_delay_100ms(5);
   _button_waitclearreport();
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
@@ -169,8 +187,13 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
 
       /* button was pressed more than 10seconds? */
       if (tickcnt > HIDMESSAGETIME) {
-          for (tickcnt=0;tickcnt<sizeof(hidmessage);tickcnt++) {
-              __button_sendkey(hidmessage[tickcnt]);
+          if (sizeof(hidmessage) > 0) {
+            for (tickcnt=0;tickcnt<3;tickcnt++) {
+                __button_sendbackspace();
+            }
+            for (tickcnt=0;tickcnt<sizeof(hidmessage);tickcnt++) {
+                __button_sendkey(hidmessage[tickcnt]);
+            }
           }
       }
     }
