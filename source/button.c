@@ -74,7 +74,7 @@ static void _button_delay_32ms(uint8_t cnt) {
         __button_yield();
         now=EXTFUNC_callByName(hwclock_now);
         diff = EXTFUNC_callByName(hwclock_tickspassed, last, now);
-        if (diff > _button_delay_ms_ticks) {
+        if (diff >= _button_delay_ms_ticks) {
             cnt--;
             last=EXTFUNC_callByName(hwclock_modify, last, _button_delay_ms_ticks);
         }
