@@ -65,18 +65,17 @@ static void __button_yield(void) {
 }
 
 #define _button_delay_ms_ticks HWCLOCK_UStoTICK(32000)
-static void _button_delay_ms(uint16_t ms) {
+static void _button_delay_32ms(uint8_t cnt) {
     hwclock_time_t last, now;
     uint32_t diff;
 
-    ms>>=5;
     last=EXTFUNC_callByName(hwclock_now);
-    while (ms > 0) {
+    while (cnt > 0) {
         __button_yield();
         now=EXTFUNC_callByName(hwclock_now);
         diff = EXTFUNC_callByName(hwclock_tickspassed, last, now);
         if (diff > _button_delay_ms_ticks) {
-            ms--;
+            cnt--;
             last=EXTFUNC_callByName(hwclock_modify, last, _button_delay_ms_ticks);
         }
     }
@@ -84,7 +83,7 @@ static void _button_delay_ms(uint16_t ms) {
 
 static void _button_waitclearreport(void) {
   /* wait some natural time */
-  _button_delay_ms(32);
+  _button_delay_32ms(32>>5);
   /* clear all reported keys */
   while (keyboard_report_dirty) { __button_yield(); }
   keyboard_report_clear(&current_keyboard_report);
@@ -112,12 +111,12 @@ static void __button_sendbackspace(void) {
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
 
-   _button_delay_ms(128);
+   _button_delay_32ms(128>>5);
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
    current_keyboard_report.keycode[0]=HIDKEYBOARD_KEYUSE_l;
 
-   _button_delay_ms(160);
+   _button_delay_32ms(160>>5);
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
  }
@@ -128,13 +127,13 @@ static void _button_sendLock(void) {
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
 
-  _button_delay_ms(128);
+  _button_delay_32ms(128>>5);
   _button_waitclearreport();
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
   current_keyboard_report.keycode[0]=0x4c; /* other Version of "delete"-key (page 55) */
 
-  _button_delay_ms(160);
+  _button_delay_32ms(160>>5);
   _button_waitclearreport();
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
