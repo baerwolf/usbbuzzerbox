@@ -88,6 +88,10 @@ static	cpucontext_t	buttoncontext;
 static void prepare_buttoncontext(void) {
   EXTFUNC_functype(CPUCONTEXT_entry_t) buttonmainfunc = EXTFUNC_NULL;
 
+#if (defined(DEBUGSTACK) && defined(MAINENDCYCLES))
+  memset(buttoncontext_stack, 0, sizeof(buttoncontext_stack));
+#endif
+
   buttonmainfunc = EXTFUNC_getPtr(button_main, CPUCONTEXT_entry_t);
   EXTFUNC_callByName(cpucontext_create, &buttoncontext, buttoncontext_stack, sizeof(buttoncontext_stack), buttonmainfunc, NULL);
 }
@@ -177,6 +181,12 @@ int main(void) {
 
   cli();
   usbDeviceDisconnect();
+#if (defined(DEBUGSTACK) && defined(MAINENDCYCLES))
+  {
+    uint8_t *eeaddr = NULL;
+    eeprom_update_block(buttoncontext_stack, &eeaddr[E2END-(sizeof(buttoncontext_stack)-1)], sizeof(buttoncontext_stack));
+  }
+#endif
   EXTFUNC_callByName(button_finalize);
   EXTFUNC_callByName(hwclock_finalize);
   EXTFUNC_callByName(cpucontext_finalize);

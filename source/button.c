@@ -11,6 +11,7 @@
 #include "libraries/hid-KeyboardMouse/gcc-code/lib/asciimap.h"
 
 #include <stdint.h>
+#include <string.h>
 
 /* put the message intentionally into SRAM to avoid long delay due to loading */
 #ifdef HIDMESSAGE
@@ -39,6 +40,10 @@ EXTFUNC_void(int8_t, button_finalize) {
 static hwclock_time_t blinklast, blinknow;
 #endif
 static void __button_yield(void) {
+#if (defined(DEBUGSTACK) && defined(MAINENDCYCLES))
+    /* exitable code with stack debugger */
+    uint8_t canary[8];
+#endif
 #ifdef LED_DEBUG
     uint32_t diff=0;
     blinknow=EXTFUNC_callByName(hwclock_now);
@@ -48,7 +53,15 @@ static void __button_yield(void) {
         blinklast=EXTFUNC_callByName(hwclock_modify, blinklast, HWCLOCK_UStoTICK(100000)); /* last=now would accumulate jitter! */
     }
 #endif
+#if (defined(DEBUGSTACK) && defined(MAINENDCYCLES))
+    memset(canary, DEBUGSTACK, sizeof(canary));
+#endif
     EXTFUNC_callByName(cpucontext_switch, cpucontext_main_context);
+#if (defined(DEBUGSTACK) && defined(MAINENDCYCLES))
+    /* it seems the compiler is optimizing the context_switch with function return */
+    /* so do sth. after switch, so function does not return immediatly */
+    memset(canary, ~(DEBUGSTACK), sizeof(canary));
+#endif
 }
 
 static void _button_dowaitticks(uint32_t waitticks) {
