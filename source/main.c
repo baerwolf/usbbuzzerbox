@@ -56,15 +56,15 @@ void __hwclock_timer_start(void) {
 #if (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__))
   TCCR0 =0b00000110; /* clock on falling edge of T0 */
 #	ifdef OC2PWM_RED
-  OCR2=0;
-  TCCR2=0b01101001;
+  OCR2=0xff;
+  TCCR2=0b01111001;
 #	endif
 #else
   TCCR0B=0b00000110; /* clock on falling edge of T0 */
 #	ifdef OC2PWM_RED
 #	define OCR2 OCR2A
-  OCR2=0;
-  TCCR2A=0b10000011;
+  OCR2=0xff;
+  TCCR2A=0b11000011;
   TCCR2B=0b00000001;
 #	endif
 #endif
@@ -86,8 +86,8 @@ void init_cpu(void) {
 void EVENT_CHANGE_LED_state (void) {
   // CAPS LOCK
 #ifdef OC2PWM_RED
-  if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_CAPS_LOCK))	OCR2=OC2PWM_RED;
-  else								OCR2=0;
+  if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_CAPS_LOCK))	OCR2=0xff-OC2PWM_RED;
+  else								OCR2=0xff;
 #else
   if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_CAPS_LOCK))	SET_HIGH(LED_RED);
   else								SET_LOW(LED_RED);
