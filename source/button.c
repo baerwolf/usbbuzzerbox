@@ -105,9 +105,8 @@ static void __button_sendbackspace(void) {
     _button_waitclearreport();
 }
 
-#if 1 /* 1=Windows, 0=Linux */
  static void _button_sendLock(void) {
-   /* Windows: GUIKey + L */
+   /* GUIKey + L */
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
 
@@ -120,9 +119,9 @@ static void __button_sendbackspace(void) {
    _button_waitclearreport();
    current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_GUI);
  }
-#else
-static void _button_sendLock(void) {
-  /* Linux: Ctrl + Alt + Delete */
+
+static void _button_sendCtrlAltDel(void) {
+  /* Ctrl + Alt + Delete */
   _button_waitclearreport();
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
@@ -138,7 +137,7 @@ static void _button_sendLock(void) {
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_CTRL);
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
 }
-#endif
+
 
 #define BUTTON_DEBOUNCE_PRESSED_US	HWCLOCK_UStoTICK(20000)
 EXTFUNC(int8_t, button_main, void* parameters)  {
@@ -185,6 +184,7 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
       /* button was pressed more than 10seconds? */
       if (tickcnt > HIDMESSAGETIME) {
           if (sizeof(hidmessage) > 0) {
+	    _button_sendCtrlAltDel();
             for (tickcnt=0;tickcnt<3;tickcnt++) {
                 __button_sendbackspace();
             }
