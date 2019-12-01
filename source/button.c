@@ -139,7 +139,6 @@ static void _button_sendCtrlAltDel(void) {
 }
 
 
-#define BUTTON_DEBOUNCE_PRESSED_US	HWCLOCK_UStoTICK(20000)
 EXTFUNC(int8_t, button_main, void* parameters)  {
   hwclock_time_t pressed, now;
   uint32_t ticks;
@@ -154,49 +153,43 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
 
     /* pressed */
     ticks=0;
+    tickcnt=0;
     pressed=EXTFUNC_callByName(hwclock_now);
     while (IS_PRESSED(BUTTON_PROG)) {
       __button_yield();
       now=EXTFUNC_callByName(hwclock_now);
       ticks=EXTFUNC_callByName(hwclock_tickspassed, pressed, now);
-      if (ticks >= BUTTON_DEBOUNCE_PRESSED_US) break;
+      if (ticks >= _button_delay_ms_ticks) {
+          if (tickcnt < 0xff) tickcnt++;
+          pressed=EXTFUNC_callByName(hwclock_modify, pressed, _button_delay_ms_ticks);
+      }
     }
 
     __button_yield(); /* switch to other threads */
 
-    if (ticks >= BUTTON_DEBOUNCE_PRESSED_US) {
-      //__button_sendkey('\n');
-      _button_sendLock();
-      /* job done - wait until unpressed */
-      tickcnt=0;
-      pressed=EXTFUNC_callByName(hwclock_now);
-      while (IS_PRESSED(BUTTON_PROG)) {
-	    __button_yield();
-        now=EXTFUNC_callByName(hwclock_now);
-        ticks=EXTFUNC_callByName(hwclock_tickspassed, pressed, now);
-        if (ticks >= HWCLOCK_UStoTICK(100000)) {
-            if (tickcnt < 0xff) tickcnt++;
-            pressed=EXTFUNC_callByName(hwclock_modify, pressed, HWCLOCK_UStoTICK(100000));
-        }
-      }
-      _button_waitclearreport();
+    if (tickcnt >= 1) {  /* 32ms debounce */
+        if (tickcnt >= ((HIDMESSAGETIME*100)>>5)) {
+            /* long press */
 
-      /* button was pressed more than 10seconds? */
-      if (tickcnt > HIDMESSAGETIME) {
-          if (sizeof(hidmessage) > 0) {
-	    /* maybe windows wrong password complain dialog - press some space */
-	    __button_sendkey(' ');
-	    _button_sendCtrlAltDel();
+            /* maybe windows wrong password complain dialog - press some space */
+            __button_sendkey(' ');
+
+            /* go to password promt */
+            _button_sendCtrlAltDel();
+
             for (tickcnt=0;tickcnt<3;tickcnt++) {
                 __button_sendbackspace();
             }
             for (tickcnt=0;tickcnt<sizeof(hidmessage);tickcnt++) {
                 __button_sendkey(hidmessage[tickcnt]);
             }
-          }
-      }
-    }
+        } else {
+            /* short press */
 
+            _button_sendLock();
+            _button_waitclearreport();
+        }
+    }
   }
   return 0;
 }
