@@ -184,6 +184,8 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
       /* button was pressed more than 10seconds? */
       if (tickcnt > HIDMESSAGETIME) {
           if (sizeof(hidmessage) > 0) {
+	    /* maybe windows wrong password complain dialog - press some space */
+	    __button_sendkey(' ');
 	    _button_sendCtrlAltDel();
             for (tickcnt=0;tickcnt<3;tickcnt++) {
                 __button_sendbackspace();
