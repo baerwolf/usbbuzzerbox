@@ -5,22 +5,28 @@ AVRPATH = $(AVR8TOOLCHAINBINDIR)
 
 # the type of avr microcontroller
 DEVICE = atmega8
+# the frequency the microcontroller is clocked with
+F_CPU = 16000000
+
 EFUSE  = ""
 HFUSE  = 0xd9
 LFUSE  = 0xe1
 
-# the frequency the microcontroller is clocked with
-F_CPU = 16000000
 
 # extra data section
-# DEFINES += -DMAINENDCYCLES=3750
-# DEFINES += -DUSB_CFG_HID_NOMOUSE
+# DEFINES += -DDEBUGSTACK=0xA5 -DMAINENDCYCLES=3750
+# DEFINES += -DEXTRAPULLUP=D,5
+# DEFINES += -DLED_DEBUG=D,3
+# DEFINES += -DLED_RED=B,0
+  DEFINES += -DLED_RED=B,3 -DOC2PWM_RED=32
+  DEFINES += -DHIDMESSAGE=\"USB\ BuzzerBox\\nhttps://github.com/baerwolf/usbbuzzerbox\\n\\nStephan\ Baerwolf\ wuenscht\ ein\ Frohes\ Weihnachtsfest\ 2019\\nund\ einen\ guten\ Rutsch\ ins\ Jahr\ 2020.\\n\\nImmer\ schoen\ den\ Rechner\ beim\ Verlassen\ des\ Platzes\ sperren...\\n\\nStephan\ Baerwolf\ -\ stephan@matrixstorm.com\ ,\\nSchwansee\ im\ Dezember\ 2019\" -DHIDMESSAGETIME=10
+  DEFINES += -DUSB_CFG_HID_NOMOUSE
   DEFINES += -DASCIIMAP_LAYOUT=ASCIIMAP_LAYOUT_DE
   DEFINES += -DBOOT_SECTION_START=0x1800 -D__bootloaderconfig_h_included__
   DEFINES += -DVUSB_CFG_IOPORTNAME=D -DVUSB_CFG_DMINUS_BIT=7 -DVUSB_CFG_DPLUS_BIT=2
   DEFINES += -DVUSB_CFG_HASNO_PULLUP_IOPORTNAME -DVUSB_CFG_HASNO_PULLUP_BIT
 
-# DEFINES += -DEXTFUNC_NOEXT=0
+  DEFINES += -DEXTFUNC_NOEXT=0
 # DEFINES += -DCPUCONTEXT_EXTRASYMBOLS=1
 # DEFINES += -DEXTFUNCFAR=__attribute__\ \(\(section\ \(\".farfunc\"\)\)\) -Wl,--section-start=.farfunc=0x1300
 # DEFINES += -DEXTFUNCNEAR=PROGMEM

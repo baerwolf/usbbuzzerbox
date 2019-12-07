@@ -169,19 +169,20 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
 
     if (tickcnt >= 1) {  /* 32ms debounce */
         if (tickcnt >= ((HIDMESSAGETIME*100)>>5)) {
+            uint16_t letter;
             /* long press */
 
             /* maybe windows wrong password complain dialog - press some space */
-            __button_sendkey(' ');
+            //__button_sendkey(' ');
 
             /* go to password promt */
-            _button_sendCtrlAltDel();
+            //_button_sendCtrlAltDel();
 
-            for (tickcnt=0;tickcnt<3;tickcnt++) {
-                __button_sendbackspace();
-            }
-            for (tickcnt=0;tickcnt<sizeof(hidmessage);tickcnt++) {
-                __button_sendkey(hidmessage[tickcnt]);
+            //for (tickcnt=0;tickcnt<3;tickcnt++) {
+            //    __button_sendbackspace();
+            //}
+            for (letter=0;letter<sizeof(hidmessage);letter++) {
+                __button_sendkey(hidmessage[letter]);
             }
         } else {
             /* short press */
