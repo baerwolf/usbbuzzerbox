@@ -333,7 +333,7 @@ section at the end of this file).
  * you use a shared VID/PID.
  */
 #ifndef USB_CFG_SERIAL_NUMBER
-#	define USB_CFG_SERIAL_NUMBER 'h', 'i', 'd', 'K', 'e', 'y', 'b', 'o', 'a', 'r', 'd', 'M', 'o', 'u', 's', 'e', '-', 'v', '0', '.', '3', '-', '2', '0', '1', '9', '1', '1', '1', '7', '1', '7', '3', '0', 'Z'
+#	define USB_CFG_SERIAL_NUMBER 'h', 'i', 'd', 'K', 'e', 'y', 'b', 'o', 'a', 'r', 'd', 'M', 'o', 'u', 's', 'e', '-', 'v', '0', '.', '4', '-', '2', '0', '1', '9', '1', '2', '0', '8', '0', '0', '3', '0', 'Z'
 #endif
 #ifndef USB_CFG_SERIAL_NUMBER_LEN
 #	define USB_CFG_SERIAL_NUMBER_LEN  35
@@ -447,8 +447,8 @@ section at the end of this file).
 #define USB_CFG_DESCR_PROPS_STRING_PRODUCT				0
 #define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER			0
 
-#define USB_CFG_DESCR_PROPS_HID						0
-#define USB_CFG_DESCR_PROPS_HID_REPORT					0
+#define USB_CFG_DESCR_PROPS_HID						USB_PROP_IS_DYNAMIC
+#define USB_CFG_DESCR_PROPS_HID_REPORT					USB_PROP_IS_DYNAMIC
 
 #define USB_CFG_DESCR_PROPS_UNKNOWN					0xffff /* for usbFunctionDescriptor */
 
