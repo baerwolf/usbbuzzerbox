@@ -1,6 +1,12 @@
 /*
  * main.c
+ * USB BuzzerBox project
+ *
+ * Stephan Baerwolf (matrixstorm@gmx.de), Schwansee 2019
+ * (please contact me at least before commercial use)
  */
+
+
 #define __MAIN_C_dc83edef7fb74d0f88488010fe346ac7	1
 
 #include "main.h"

@@ -1,6 +1,12 @@
 /*
  * button.h
+ * USB BuzzerBox project
+ *
+ * Stephan Baerwolf (matrixstorm@gmx.de), Schwansee 2019
+ * (please contact me at least before commercial use)
  */
+
+
 #ifndef __BUTTON_H_4e4452d56b804728958f23a3d7f49a38
 #define __BUTTON_H_4e4452d56b804728958f23a3d7f49a38	1
 

@@ -1,6 +1,11 @@
 /*
  * defines.h
+ * USB BuzzerBox project
+ *
+ * Stephan Baerwolf (matrixstorm@gmx.de), Schwansee 2019
+ * (please contact me at least before commercial use)
  */
+
 #ifndef __DEFINES_H_94b054518dfc475a9d5b532207a60b61
 #define __DEFINES_H_94b054518dfc475a9d5b532207a60b61 1
 
