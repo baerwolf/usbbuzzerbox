@@ -188,7 +188,13 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
             //}
             for (letter=0;letter<sizeof(hidmessage);letter++) {
                 __button_sendkey(hidmessage[letter]);
+                if (IS_PRESSED(BUTTON_PROG)) break;
             }
+
+            while (IS_PRESSED(BUTTON_PROG)) {
+                __button_yield();
+            }
+
         } else {
             /* short press */
 
