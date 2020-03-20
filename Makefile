@@ -12,6 +12,8 @@ EFUSE  = ""
 HFUSE  = 0xd9
 LFUSE  = 0xe1
 
+# use new feature: hwclock without external wire
+  DEFINES += -DPWMLESS_HWCLOCK
 
 # extra data section
 # DEFINES += -DDEBUGSTACK=0xA5 -DMAINENDCYCLES=3750

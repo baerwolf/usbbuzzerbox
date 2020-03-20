@@ -6,6 +6,7 @@
  * (please contact me at least before commercial use)
  */
 
+/* when "PWMLESS_HWCLOCK" is defined - timers are initialized differently */
 
 #define __MAIN_C_dc83edef7fb74d0f88488010fe346ac7	1
 
@@ -56,25 +57,92 @@ void __hwclock_timer_init(void) {
 }
 void __hwclock_timer_start(void) {
 //PWM TIMER1 (R&G)
+#   ifdef PWMLESS_HWCLOCK
+  TCCR1A=0b00000000;
+  TCCR1B=0b00000100;
+#   else
   TCCR1A=0b00110011;
   TCCR1B=0b00011001;
+#   endif
+
 //TIMER0
 #if (defined (__AVR_ATmega8__) || defined (__AVR_ATmega8A__))
+#   ifdef PWMLESS_HWCLOCK
+  TCCR0 =0b00000001; /* activate timer0 running */
+#   else
   TCCR0 =0b00000110; /* clock on falling edge of T0 */
+#   endif
+
 #	ifdef OC2PWM_RED
-  OCR2=0xff;
-  TCCR2=0b01111001;
+  OCR2  =0xff;
+  TCCR2 =0b01111001;
 #	endif
-#else
+
+#else /* not atmega8 */
+#   ifdef PWMLESS_HWCLOCK
+  TCCR0B=0b00000001; /* activate timer0 running */
+#   else
   TCCR0B=0b00000110; /* clock on falling edge of T0 */
+#   endif
+
 #	ifdef OC2PWM_RED
 #	define OCR2 OCR2A
   OCR2=0xff;
   TCCR2A=0b11000011;
   TCCR2B=0b00000001;
 #	endif
+
 #endif
-}
+
+
+#   ifdef PWMLESS_HWCLOCK
+  /* calibrate timer0 to prescaler of timer1                */
+  /* in general we need to use 2-cycle memory access:       */
+  /* This introduces a problem, since the prescaler can     */
+  /* overflow not just inbetween the two tcnthl accesses    */
+  /* but also during execution of the second "LDS"...       */
+  /* BUT IT IS NOT THE SAME AS: "IN r18" - "NOP" - "IN r19" */
+  asm volatile (
+      "timer0_calibrate_again%=:       \n\t"
+      "lds  r18, %[tcnthl]             \n\t" /* 2 cycles - sampled after 1 cycle */
+      "lds  r19, %[tcnthl]             \n\t" /* 2 cycles - sampled after 1 cycle */
+      "inc  r18                        \n\t" /* 1 cycle  */
+      "nop                             \n\t" /* 1 cycle to gcd()=1 */
+      "cp   r18, r19                   \n\t" /* 1 cycle  */
+      "brne timer0_calibrate_again%=   \n\t" /* 2 cycles jumping - 1 cycle continue */
+
+
+      /* we configure here, as overflow would have happend during sampling of "LDS r19" */
+      "ldi  r20, 7                     \n\t" /* 1 cycle  */
+      "out  %[tcnt], r20               \n\t" /* 1 cycle  */
+      "nop                             \n\t" /* 1 cycle - here TCNT0 must be 7 */
+
+      /* if prescaler overflowed starting at "LDS r19" before sampling... */
+      /* ...it overflows again in 254 cycles after that.                  */
+      /* (That means if LDS is executed in 253 cycles and tcnthl sampled  */
+      /*  in 254 cycles to be incremented one more...)                    */
+      /* taking the other opcodes into account leaves us with 246 cycles  */
+      "ldi  r20, 246                   \n\t" /* 1 cycle  */
+      "timer0_calibrate_busyloop%=:    \n\t"
+      "subi r20, 3                     \n\t" /* 1 cycle  */
+      "brne timer0_calibrate_busyloop%=\n\t" /* 2 cycles jumping - 1 cycle continue */
+
+      /* here we are 1 cycle ahead of overflow? (due to brne) - 245 cycles passed  */
+      /* 253 cycles since last "LDS r19" ...                                       */
+      "lds  r19, %[tcnthl]             \n\t" /* 2 cycles - sampled after 1 cycle   */
+      "ldi  r20, 3                     \n\t" /* 1 cycle - in case of equal, overflow happens here */
+      "cpse r18, r19                   \n\t" /* 1 cycle - equal means overflow when sampled */
+      "out  %[tcnt], r20               \n\t" /* 1 cycle - overflow happend before sampling */
+
+
+      :
+      : [tcnt]          "i" (_SFR_IO_ADDR(TCNT0)),
+        [tcnthl]		"i"	(_SFR_MEM_ADDR(HWCLOCK_MSBTIMER_VALUEREG_LOW)),
+        [tcntll]		"i"	(_SFR_MEM_ADDR(HWCLOCK_LSBTIMER_VALUEREG_LOW))
+      : "r20", "r19", "r18"
+           );
+#   endif
+} /* end of hardware selected "__hwclock_timer_start" */
 #else
 #	error unsupported AVR
 #endif
