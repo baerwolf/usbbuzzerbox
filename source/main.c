@@ -197,7 +197,10 @@ static void prepare_buttoncontext(void) {
   /* if context is not running (should be always so)      */
   if (!CPUCONTEXT_isDirty(&buttoncontext)) {
   /* enable interrupts by manipulating the suspended SREG */
-    buttoncontext.stack->sreg|=_BV(SREG_I);
+#ifndef CPUCONTEXT_REGISTER_SREG
+#   define  CPUCONTEXT_REGISTER_SREG(x) ((x)->stack->sreg)
+#endif
+    CPUCONTEXT_REGISTER_SREG(&buttoncontext)|=_BV(SREG_I);
   }
 }
 
