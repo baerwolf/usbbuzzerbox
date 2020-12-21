@@ -166,6 +166,10 @@ void EVENT_CHANGE_LED_state (void) {
   if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_CAPS_LOCK))	SET_HIGH(LED_RED);
   else								SET_LOW(LED_RED);
 #endif
+#if LED_KANA
+  if (current_LED_state & _BV(HIDKEYBOARD_LEDBIT_KANA))	SET_HIGH(LED_KANA);
+  else								SET_LOW(LED_KANA);
+#endif
 }
 
 
@@ -220,6 +224,9 @@ int main(void) {
   SET_HIGH(EXTRAPULLUP); CFG_OUTPUT(EXTRAPULLUP);
   CFG_PULLUP(BUTTON_PROG);
   CFG_OUTPUT(LED_RED);
+#if LED_KANA
+  CFG_OUTPUT(LED_KANA);
+#endif
   _delay_ms(300);
   
   EXTFUNC_callByName(button_initialize);
