@@ -183,6 +183,18 @@ static void prepare_buttoncontext(void) {
 
   buttonmainfunc = EXTFUNC_getPtr(button_main, CPUCONTEXT_entry_t);
   EXTFUNC_callByName(cpucontext_create, &buttoncontext, buttoncontext_stack, sizeof(buttoncontext_stack), buttonmainfunc, NULL);
+
+  /* also enable interrupts in button-thread              */
+  /* Since interrupts are still disabled here
+   * in "prepare_buttoncontext", the new context
+   * is inheriting this setting and will disable
+   * global interrupts in every switch()                  */
+
+  /* if context is not running (should be always so)      */
+  if (!CPUCONTEXT_isDirty(&buttoncontext)) {
+  /* enable interrupts by manipulating the suspended SREG */
+    buttoncontext.stack->sreg|=_BV(SREG_I);
+  }
 }
 
 static void switchto_buttocontext(void) {
