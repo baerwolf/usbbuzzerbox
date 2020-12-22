@@ -4,8 +4,8 @@ USB Buzzer Box
 USB Buzzer Box is a free programmable one key USB HID keyboard.
 By default for locking your computer screen.
 
-There is a short pressed (locking) and a long pressed (type a message) mode
-and multiple AVRs are supported with this code.
+There is a short pressed (locking) and a long pressed (type a message/
+mouse wobbling) mode and multiple AVRs are supported with this code.
 
 
 ### Hardware dependencies
@@ -50,8 +50,8 @@ execute), switches to "buttoncontext" only take place ever 4x4ms.
 So code from "button.c" is executed only slowly and in low priority.
 This is also why delay time resolution is 32ms (2**5) within there. 
 
-The stack for "buttoncontext" is defined in main.c and currently 128 bytes
+The stack for "buttoncontext" is defined in main.c and currently 192 bytes
 in size. Adding complexity to the button-code might need an increase there.
 
 
-by Stephan Baerwolf (stephan@matrixstorm.com), Schwansee 2019
+by Stephan Baerwolf (stephan@matrixstorm.com), Schwansee 2020
