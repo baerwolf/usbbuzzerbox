@@ -175,7 +175,7 @@ void EVENT_CHANGE_LED_state (void) {
 
 
 // thread-stuff for button handling ///////////////////
-static 	uint8_t		buttoncontext_stack[128];
+static 	uint8_t		buttoncontext_stack[192];
 static	cpucontext_t	buttoncontext;
 
 static void prepare_buttoncontext(void) {
