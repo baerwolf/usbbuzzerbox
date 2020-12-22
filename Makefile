@@ -19,10 +19,11 @@ LFUSE  = 0xe1
 # DEFINES += -DDEBUGSTACK=0xA5 -DMAINENDCYCLES=3750
 # DEFINES += -DEXTRAPULLUP=D,5
   DEFINES += -DLED_DEBUG=D,3
+  DEFINES += -DLED_KANA=B,1
   DEFINES += -DLED_RED=B,0
 # DEFINES += -DLED_RED=B,3 -DOC2PWM_RED=32
-  DEFINES += -DHIDMESSAGE=\"USB\ BuzzerBox\\nhttps://github.com/baerwolf/usbbuzzerbox\\n\\nStephan\ Baerwolf\ wuenscht\ ein\ Frohes\ Weihnachtsfest\ 2019\\nund\ einen\ guten\ Rutsch\ ins\ Jahr\ 2020.\\n\\nImmer\ schoen\ den\ Rechner\ beim\ Verlassen\ des\ Platzes\ sperren...\\n\\nStephan\ Baerwolf\ -\ stephan@matrixstorm.com\ ,\\nSchwansee\ im\ Dezember\ 2019\" -DHIDMESSAGETIME=10
-  DEFINES += -DUSB_CFG_HID_NOMOUSE
+  DEFINES += -DHIDMESSAGE=\"USB\ BuzzerBox\\nhttps://github.com/baerwolf/usbbuzzerbox\\n\\nStephan\ Baerwolf\ wuenscht\ ein\ Frohes\ Weihnachtsfest\ 2020\\nund\ einen\ guten\ Rutsch\ ins\ Jahr\ 2021.\\n\\nImmer\ schoen\ den\ Rechner\ beim\ Verlassen\ des\ Platzes\ sperren...\\n\\nStephan\ Baerwolf\ -\ stephan@matrixstorm.com\ ,\\nSchwansee\ im\ Dezember\ 2020\" -DHIDMESSAGETIME=10
+# DEFINES += -DUSB_CFG_HID_NOMOUSE
   DEFINES += -DASCIIMAP_LAYOUT=ASCIIMAP_LAYOUT_DE
   DEFINES += -DBOOT_SECTION_START=0x1800 -D__bootloaderconfig_h_included__
   DEFINES += -DVUSB_CFG_IOPORTNAME=D -DVUSB_CFG_DMINUS_BIT=7 -DVUSB_CFG_DPLUS_BIT=2

@@ -18,11 +18,16 @@
 #include <stdint.h>
 #include <string.h>
 
+#ifdef USB_CFG_HID_NOMOUSE
 /* put the message intentionally into SRAM to avoid long delay due to loading */
 #ifdef HIDMESSAGE
 static uint8_t hidmessage[] = HIDMESSAGE "\n";
 #else
 static uint8_t hidmessage[] = "";
+#endif
+#else
+#   include <stdlib.h>
+static bool    hasRandSeed  = false;
 #endif
 
 #ifndef HIDMESSAGETIME
@@ -96,12 +101,24 @@ static void _button_waitclearreport(void) {
   keyboard_report_dirty |= 0x02;
 }
 
+#ifdef USB_CFG_HID_NOMOUSE
 static void __button_sendkey(uint8_t key) {
   _button_waitclearreport();
   asciitokeyreport(key, &current_keyboard_report);
   
   _button_waitclearreport();
 }
+#else
+static void _mouse_waitclearreport(void) {
+  /* wait some natural time */
+  _button_delay_32ms(32>>5);
+  /* clear all mouseevent data */
+  while (mouse_report_dirty) { __button_yield(); }
+  mouse_report_clear(&current_mouse_report);
+  /* but still mark dirty */
+  mouse_report_dirty |= 0x02;
+}
+#endif
 
 static void __button_sendbackspace(void) {
     _button_waitclearreport();
@@ -143,6 +160,16 @@ static void _button_sendCtrlAltDel(void) {
   current_keyboard_report.modifier|=_BV(HIDKEYBOARD_MODBIT_LEFT_ALT);
 }
 
+#ifndef MOUSE_MAXDISPLACE
+static void __mousetoggleled(void) {
+#ifdef OC2PWM_RED
+  if (OCR2==0xff) OCR2=0xff-OC2PWM_RED;
+  else			  OCR2=0xff;
+#else
+  TOGGLE(LED_RED);
+#endif
+}
+#endif
 
 EXTFUNC(int8_t, button_main, void* parameters)  {
   hwclock_time_t pressed, now;
@@ -174,6 +201,7 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
 
     if (tickcnt >= 1) {  /* 32ms debounce */
         if (tickcnt >= ((HIDMESSAGETIME*100)>>5)) {
+#ifdef USB_CFG_HID_NOMOUSE
             uint16_t letter;
             /* long press */
 
@@ -190,11 +218,58 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
                 __button_sendkey(hidmessage[letter]);
                 if (IS_PRESSED(BUTTON_PROG)) break;
             }
+#else
+            int8_t _x=0, _y=0, i;
+
+            if (!hasRandSeed) {
+                now=EXTFUNC_callByName(hwclock_now);
+                ticks=EXTFUNC_callByName(hwclock_tickspassed, pressed, now);
+                srand(ticks);
+                hasRandSeed=true;
+            }
+
+            /* with mouse support enabled just wobble the cursor a bit */
+            while (!(IS_PRESSED(BUTTON_PROG))) {
+                __mousetoggleled();
+                _mouse_waitclearreport();
+
+#ifndef MOUSE_MAXDISPLACE
+#   define MOUSE_MAXDISPLACE (1)
+#endif
+                if (((_x > (MOUSE_MAXDISPLACE)) || (_x < (-(MOUSE_MAXDISPLACE)))) ||
+                    ((_y > (MOUSE_MAXDISPLACE)) || (_y < (-(MOUSE_MAXDISPLACE))))) {
+                    current_mouse_report.displacement[mouse_report_displacement_X]+=-_x;
+                    current_mouse_report.displacement[mouse_report_displacement_Y]+=-_y;
+                } else {
+                    current_mouse_report.displacement[mouse_report_displacement_X]+=((int8_t)(rand() % 3))-1;
+                    current_mouse_report.displacement[mouse_report_displacement_Y]+=((int8_t)(rand() % 3))-1;
+                }
+
+                _x+=current_mouse_report.displacement[mouse_report_displacement_X];
+                _y+=current_mouse_report.displacement[mouse_report_displacement_Y];
+
+                /* just slow wobbling a bit down */
+                for (i=0;i<32;i++) {
+                    if (IS_PRESSED(BUTTON_PROG)) break;
+                    __button_yield();
+                }
+            }
+
+            if ((_x != 0) || (_y != 0)) {
+                /* move  back to original position */
+                _mouse_waitclearreport();
+                current_mouse_report.displacement[mouse_report_displacement_X]+=-_x;
+                current_mouse_report.displacement[mouse_report_displacement_Y]+=-_y;
+            }
+
+            /* ATTANTION: this is sick, because we are calling cross context !! */
+            EVENT_CHANGE_LED_state();
+
+#endif
 
             while (IS_PRESSED(BUTTON_PROG)) {
                 __button_yield();
             }
-
         } else {
             /* short press */
 
