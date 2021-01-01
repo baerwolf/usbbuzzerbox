@@ -219,7 +219,7 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
                 if (IS_PRESSED(BUTTON_PROG)) break;
             }
 #else
-            int8_t _x=0, _y=0, i;
+            int8_t i;
 
             if (!hasRandSeed) {
                 now=EXTFUNC_callByName(hwclock_now);
@@ -234,33 +234,24 @@ EXTFUNC(int8_t, button_main, void* parameters)  {
                 _mouse_waitclearreport();
 
 #ifndef MOUSE_MAXDISPLACE
-#   define MOUSE_MAXDISPLACE (1)
+#   define MOUSE_MAXDISPLACE (32)
 #endif
-                if (((_x > (MOUSE_MAXDISPLACE)) || (_x < (-(MOUSE_MAXDISPLACE)))) ||
-                    ((_y > (MOUSE_MAXDISPLACE)) || (_y < (-(MOUSE_MAXDISPLACE))))) {
-                    current_mouse_report.displacement[mouse_report_displacement_X]+=-_x;
-                    current_mouse_report.displacement[mouse_report_displacement_Y]+=-_y;
-                } else {
-                    current_mouse_report.displacement[mouse_report_displacement_X]+=((int8_t)(rand() % 3))-1;
-                    current_mouse_report.displacement[mouse_report_displacement_Y]+=((int8_t)(rand() % 3))-1;
+                current_mouse_report.displacement[mouse_report_displacement_X]+=((int8_t)(rand() % 15))-7;
+                current_mouse_report.displacement[mouse_report_displacement_Y]+=((int8_t)(rand() % 15))-7;
+
+                if ((current_mouse_report.displacement[mouse_report_displacement_X]==0) &&
+                    (current_mouse_report.displacement[mouse_report_displacement_Y]==0)) {
+                    /* in case of no mouse movement, do not send a report */
+                    mouse_report_dirty &= 0xFD; /* clear 0x02 from "_mouse_waitclearreport" */
                 }
 
-                _x+=current_mouse_report.displacement[mouse_report_displacement_X];
-                _y+=current_mouse_report.displacement[mouse_report_displacement_Y];
-
                 /* just slow wobbling a bit down */
-                for (i=0;i<32;i++) {
+                for (i=0;i<((rand()&0x1f)+1);i++) {
                     if (IS_PRESSED(BUTTON_PROG)) break;
                     __button_yield();
                 }
             }
 
-            if ((_x != 0) || (_y != 0)) {
-                /* move  back to original position */
-                _mouse_waitclearreport();
-                current_mouse_report.displacement[mouse_report_displacement_X]+=-_x;
-                current_mouse_report.displacement[mouse_report_displacement_Y]+=-_y;
-            }
 
             /* ATTANTION: this is sick, because we are calling cross context !! */
             EVENT_CHANGE_LED_state();
